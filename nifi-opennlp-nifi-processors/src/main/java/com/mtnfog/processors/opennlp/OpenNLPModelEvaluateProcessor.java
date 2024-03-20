@@ -16,16 +16,16 @@
  */
 package com.mtnfog.processors.opennlp;
 
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
 import org.apache.nifi.annotation.behavior.WritesAttributes;
-import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.SeeAlso;
 import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.nifi.annotation.lifecycle.OnScheduled;
+import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -39,24 +39,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Tags({"example"})
-@CapabilityDescription("Provide a description")
+@Tags({"opennlp"})
+@CapabilityDescription("Evaluates an Apache OpenNLP model")
 @SeeAlso({})
 @ReadsAttributes({@ReadsAttribute(attribute="", description="")})
 @WritesAttributes({@WritesAttribute(attribute="", description="")})
-public class MyProcessor extends AbstractProcessor {
+public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
 
-    public static final PropertyDescriptor MY_PROPERTY = new PropertyDescriptor
-            .Builder().name("MY_PROPERTY")
-            .displayName("My property")
-            .description("Example Property")
+    public static final PropertyDescriptor MODEL_FILE_NAME = new PropertyDescriptor
+            .Builder().name("MODEL_FILE_NAME")
+            .displayName("Model file name")
+            .description("The file name of the trained Apache OpenNLP model")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final Relationship MY_RELATIONSHIP = new Relationship.Builder()
-            .name("MY_RELATIONSHIP")
-            .description("Example relationship")
+    public static final PropertyDescriptor THRESHOLD_PRECISION = new PropertyDescriptor
+            .Builder().name("THRESHOLD_PRECISION")
+            .displayName("Precision threshold")
+            .description("The precision threshold for deploying the model")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final Relationship DEPLOY = new Relationship.Builder()
+            .name("DEPLOY")
+            .description("Deploy the model")
             .build();
 
     private List<PropertyDescriptor> descriptors;
@@ -66,11 +74,12 @@ public class MyProcessor extends AbstractProcessor {
     @Override
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
-        descriptors.add(MY_PROPERTY);
+        descriptors.add(MODEL_FILE_NAME);
+        descriptors.add(THRESHOLD_PRECISION);
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
-        relationships.add(MY_RELATIONSHIP);
+        relationships.add(DEPLOY);
         relationships = Collections.unmodifiableSet(relationships);
     }
 
@@ -97,4 +106,5 @@ public class MyProcessor extends AbstractProcessor {
         }
         // TODO implement
     }
+
 }
