@@ -132,19 +132,20 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
             final ObjectStream<NameSample> sampleStream = new NameSampleDataStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
 
             final TrainingParameters params = new TrainingParameters();
-            params.put(TrainingParameters.ITERATIONS_PARAM, 20);
+            params.put(TrainingParameters.ITERATIONS_PARAM, 3);
             params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-            final long startTime = System.currentTimeMillis();
+            getLogger().info("Model training beginning");
             final TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
                     params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
-            final long elapsedTime = System.currentTimeMillis() - startTime;
-            System.out.println("Model training took " + elapsedTime + " ms");
 
             final String modelOut = context.getProperty(OUTPUT_MODEL_FILE_NAME).getValue();
             nameFinderModel.serialize(new File(modelOut));
+            getLogger().info("Trained model written to " + modelOut);
 
             session.putAttribute(flowFile, "model_file", modelOut);
+
+            session.transfer(flowFile, TRAINED);
 
         } catch (Exception ex) {
 
