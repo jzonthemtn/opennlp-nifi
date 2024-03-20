@@ -1,3 +1,3 @@
 # Apache OpenNLP Processors for Apache NiFi
 
-This repository contains Apache NiFI processors that use Apache OpenNLP for NLP model training, evaluation, and deployment.
+This repository contains ]Apache NiFI](https://nifi.apache.org) processors that use [Apache OpenNLP](https://opennlp.apache.org) for NLP model training, evaluation, and deployment.
