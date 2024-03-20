@@ -25,7 +25,6 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.eval.FMeasure;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -75,6 +74,14 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor THRESHOLD_RECALL = new PropertyDescriptor
+            .Builder().name("THRESHOLD_RECALL")
+            .displayName("Recall threshold")
+            .description("The recall threshold for deploying the model")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
     public static final Relationship VALIDATION_SUCCESSFUL = new Relationship.Builder()
             .name("VALIDATION_SUCCESSFUL")
             .description("The validation was successful")
@@ -98,6 +105,7 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
         descriptors.add(THRESHOLD_PRECISION);
+        descriptors.add(THRESHOLD_RECALL);
         descriptors.add(EVALUATION_DATA);
         descriptors = Collections.unmodifiableList(descriptors);
 
@@ -142,11 +150,16 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
                 final double precisionThreshold = context.getProperty(THRESHOLD_PRECISION).asDouble();
                 final double precision = evaluator.getFMeasure().getPrecisionScore();
 
-                if(precision >= precisionThreshold) {
+                final double recallThreshold = context.getProperty(THRESHOLD_RECALL).asDouble();
+                final double recall = evaluator.getFMeasure().getRecallScore();
+
+                if(precision >= precisionThreshold && recall >= recallThreshold) {
                     getLogger().info("Validation successful with precision " + precision + " >= " + precisionThreshold);
+                    getLogger().info("Validation successful with recall " + recall + " >= " + recallThreshold);
                     session.transfer(flowFile, VALIDATION_SUCCESSFUL);
                 } else {
                     getLogger().info("Validation failed with precision " + precision + " < " + precisionThreshold);
+                    getLogger().info("Validation failed with precision " + recall + " < " + recallThreshold);
                     session.transfer(flowFile, VALIDATION_FAILED);
                 }
 

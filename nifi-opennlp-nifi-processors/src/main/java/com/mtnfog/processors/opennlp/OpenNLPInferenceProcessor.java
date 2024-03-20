@@ -16,6 +16,10 @@
  */
 package com.mtnfog.processors.opennlp;
 
+import com.google.gson.Gson;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.Span;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -30,8 +34,18 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
+import org.apache.nifi.processor.io.StreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,8 +67,8 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final Relationship TRAINED = new Relationship.Builder()
-            .name("SUCCESS")
+    public static final Relationship INFERENCE_COMPLETE = new Relationship.Builder()
+            .name("INFERENCE_COMPLETE")
             .description("Model successfully applied")
             .build();
 
@@ -67,6 +81,8 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
 
     private Set<Relationship> relationships;
 
+    private final Gson gson = new Gson();
+
     @Override
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
@@ -74,7 +90,7 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
-        relationships.add(TRAINED);
+        relationships.add(INFERENCE_COMPLETE);
         relationships.add(FAILURE);
         relationships = Collections.unmodifiableSet(relationships);
     }
@@ -98,7 +114,39 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
 
         getLogger().info("Inference processor triggered");
 
+        try {
 
+            final InputStream is = new FileInputStream("en-ner-person.bin");
+
+            final TokenNameFinderModel model = new TokenNameFinderModel(is);
+            is.close();
+
+            final NameFinderME nameFinder = new NameFinderME(model);
+
+            flowFile = session.write(flowFile, (in, out) -> {
+
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.defaultCharset()));
+                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, Charset.defaultCharset()));) {
+
+                    String line;
+                    while (null != (line = br.readLine())) {
+
+                        final String[] tokens = line.split(" ");
+                        final Span[] spans = nameFinder.find(tokens);
+
+                        final String updatedValue = gson.toJson(spans);
+                        bw.write(updatedValue);
+
+                    }
+
+                }
+            });
+
+            session.transfer(flowFile, INFERENCE_COMPLETE);
+
+        } catch (Exception ex) {
+            getLogger().error("Unable to perform inference.", ex);
+        }
 
     }
 
