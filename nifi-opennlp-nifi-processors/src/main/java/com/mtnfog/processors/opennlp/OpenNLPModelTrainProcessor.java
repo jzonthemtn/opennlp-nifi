@@ -46,17 +46,30 @@ import java.util.Set;
 @WritesAttributes({@WritesAttribute(attribute="", description="")})
 public class OpenNLPModelTrainProcessor extends AbstractProcessor {
 
-    public static final PropertyDescriptor MY_PROPERTY = new PropertyDescriptor
-            .Builder().name("MY_PROPERTY")
-            .displayName("My property")
-            .description("Example Property")
+    public static final PropertyDescriptor OUTPUT_MODEL_FILE_NAME = new PropertyDescriptor
+            .Builder().name("OUTPUT_MODEL_FILE_NAME")
+            .displayName("Output model file name")
+            .description("The output file name of the trained model")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final Relationship MY_RELATIONSHIP = new Relationship.Builder()
-            .name("MY_RELATIONSHIP")
-            .description("Example relationship")
+    public static final PropertyDescriptor TRAINING_DATA_DIRECTORY = new PropertyDescriptor
+            .Builder().name("TRAINING_DATA_DIRECTORY")
+            .displayName("Training data directory")
+            .description("Local directory containing the training data")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
+    public static final Relationship TRAINED = new Relationship.Builder()
+            .name("TRAINED")
+            .description("Model successfully trained")
+            .build();
+
+    public static final Relationship FAILURE = new Relationship.Builder()
+            .name("FAILURE")
+            .description("Failure while training model")
             .build();
 
     private List<PropertyDescriptor> descriptors;
@@ -66,11 +79,13 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
     @Override
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
-        descriptors.add(MY_PROPERTY);
+        descriptors.add(OUTPUT_MODEL_FILE_NAME);
+        descriptors.add(TRAINING_DATA_DIRECTORY);
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
-        relationships.add(MY_RELATIONSHIP);
+        relationships.add(TRAINED);
+        relationships.add(FAILURE);
         relationships = Collections.unmodifiableSet(relationships);
     }
 
