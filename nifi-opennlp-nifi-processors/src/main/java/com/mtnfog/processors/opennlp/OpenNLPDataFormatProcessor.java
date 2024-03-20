@@ -54,9 +54,14 @@ public class OpenNLPDataFormatProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final Relationship MY_RELATIONSHIP = new Relationship.Builder()
-            .name("MY_RELATIONSHIP")
-            .description("Example relationship")
+    public static final Relationship DATA_READY = new Relationship.Builder()
+            .name("DATA_READY")
+            .description("Data is ready for training")
+            .build();
+
+    public static final Relationship MALFORMED_DATA = new Relationship.Builder()
+            .name("MALFORMED_DATA")
+            .description("Data is not ready for training")
             .build();
 
     private List<PropertyDescriptor> descriptors;
@@ -70,7 +75,8 @@ public class OpenNLPDataFormatProcessor extends AbstractProcessor {
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
-        relationships.add(MY_RELATIONSHIP);
+        relationships.add(DATA_READYs);
+        relationships.add(MALFORMED_DATA);
         relationships = Collections.unmodifiableSet(relationships);
     }
 
