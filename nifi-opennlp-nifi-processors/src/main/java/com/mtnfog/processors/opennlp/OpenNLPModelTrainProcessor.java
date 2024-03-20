@@ -124,6 +124,8 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
             return;
         }
 
+        getLogger().info("Processor triggered");
+
         try {
 
             final String trainingDataFile = context.getProperty(TRAINING_DATA).getValue();
@@ -149,6 +151,7 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
 
         } catch (Exception ex) {
 
+            getLogger().error("Unable to train model", ex);
             session.transfer(flowFile, FAILURE);
 
         }
