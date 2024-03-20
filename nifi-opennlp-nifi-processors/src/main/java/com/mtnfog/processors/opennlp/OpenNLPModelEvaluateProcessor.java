@@ -67,6 +67,11 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
             .description("Deploy the model")
             .build();
 
+    public static final Relationship VALIDATION_FAILED = new Relationship.Builder()
+            .name("VALIDATION_FAILED")
+            .description("Validation did not meet the required thresholds")
+            .build();
+
     private List<PropertyDescriptor> descriptors;
 
     private Set<Relationship> relationships;
@@ -80,6 +85,7 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
 
         relationships = new HashSet<>();
         relationships.add(DEPLOY);
+        relationships.add(VALIDATION_FAILED)
         relationships = Collections.unmodifiableSet(relationships);
     }
 
