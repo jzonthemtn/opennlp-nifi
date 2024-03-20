@@ -16,16 +16,27 @@
  */
 package com.mtnfog.processors.opennlp;
 
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.flowfile.FlowFile;
+import opennlp.tools.namefind.BioCodec;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.NameSampleDataStream;
+import opennlp.tools.namefind.TokenNameFinderFactory;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
 import org.apache.nifi.annotation.behavior.WritesAttributes;
-import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.SeeAlso;
 import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.nifi.annotation.lifecycle.OnScheduled;
+import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -33,6 +44,8 @@ import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -110,7 +123,35 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
         if (flowFile == null) {
             return;
         }
-        // TODO implement
+
+        try {
+
+            final String trainingDataFile = context.getProperty(TRAINING_DATA).getValue();
+            final InputStreamFactory in = new MarkableFileInputStreamFactory(new File(trainingDataFile));
+
+            final ObjectStream<NameSample> sampleStream = new NameSampleDataStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+
+            final TrainingParameters params = new TrainingParameters();
+            params.put(TrainingParameters.ITERATIONS_PARAM, 20);
+            params.put(TrainingParameters.CUTOFF_PARAM, 1);
+
+            final long startTime = System.currentTimeMillis();
+            final TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
+                    params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+            final long elapsedTime = System.currentTimeMillis() - startTime;
+            System.out.println("Model training took " + elapsedTime + " ms");
+
+            final String modelOut = context.getProperty(OUTPUT_MODEL_FILE_NAME).getValue();
+            nameFinderModel.serialize(new File(modelOut));
+
+            session.putAttribute(flowFile, "model_file", modelOut);
+
+        } catch (Exception ex) {
+
+            session.transfer(flowFile, FAILURE);
+
+        }
+
     }
 
 }
