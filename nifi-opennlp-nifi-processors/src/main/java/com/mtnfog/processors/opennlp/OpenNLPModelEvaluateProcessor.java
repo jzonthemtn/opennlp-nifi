@@ -54,6 +54,14 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor EVALUATION_DATA = new PropertyDescriptor
+            .Builder().name("EVALUATION_DATA")
+            .displayName("Evaluation data")
+            .description("Local file containing the evaluation data")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+
     public static final PropertyDescriptor THRESHOLD_PRECISION = new PropertyDescriptor
             .Builder().name("THRESHOLD_PRECISION")
             .displayName("Precision threshold")
