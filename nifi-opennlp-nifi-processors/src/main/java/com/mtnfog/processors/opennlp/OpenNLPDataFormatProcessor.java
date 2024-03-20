@@ -75,7 +75,7 @@ public class OpenNLPDataFormatProcessor extends AbstractProcessor {
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
-        relationships.add(DATA_READYs);
+        relationships.add(DATA_READY);
         relationships.add(MALFORMED_DATA);
         relationships = Collections.unmodifiableSet(relationships);
     }
