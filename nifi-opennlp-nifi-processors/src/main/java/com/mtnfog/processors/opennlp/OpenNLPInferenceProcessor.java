@@ -114,9 +114,11 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
 
         getLogger().info("Inference processor triggered");
 
+        final String modelFile = context.getProperty(MODEL_FILE_NAME).getValue();
+
         try {
 
-            final InputStream is = new FileInputStream("en-ner-person.bin");
+            final InputStream is = new FileInputStream(modelFile);
 
             final TokenNameFinderModel model = new TokenNameFinderModel(is);
             is.close();
