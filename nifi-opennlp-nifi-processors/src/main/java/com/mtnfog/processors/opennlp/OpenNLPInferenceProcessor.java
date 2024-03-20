@@ -146,6 +146,7 @@ public class OpenNLPInferenceProcessor extends AbstractProcessor {
 
         } catch (Exception ex) {
             getLogger().error("Unable to perform inference.", ex);
+            session.transfer(flowFile, FAILURE);
         }
 
     }
