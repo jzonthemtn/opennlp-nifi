@@ -14,31 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mtnfog;
+package com.mtnfog.processors.opennlp;
 
-import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestStandardMyService {
+public class MyProcessorTest {
+
+    private TestRunner testRunner;
 
     @BeforeEach
     public void init() {
-
+        testRunner = TestRunners.newTestRunner(MyProcessor.class);
     }
 
     @Test
-    public void testService() throws InitializationException {
-        final TestRunner runner = TestRunners.newTestRunner(TestProcessor.class);
-        final StandardMyService service = new StandardMyService();
-        runner.addControllerService("test-good", service);
+    public void testProcessor() {
 
-        runner.setProperty(service, StandardMyService.MY_PROPERTY, "test-value");
-        runner.enableControllerService(service);
-
-        runner.assertValid(service);
     }
 
 }

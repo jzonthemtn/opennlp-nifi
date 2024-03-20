@@ -28,9 +28,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>nifi-opennlp-nifi-api</module>
-        <module>nifi-opennlp-nifi-api-nar</module>
-        <module>nifi-opennlp-nifi</module>
+        <module>nifi-opennlp-nifi-processors</module>
         <module>nifi-opennlp-nifi-nar</module>
     </modules>
 
