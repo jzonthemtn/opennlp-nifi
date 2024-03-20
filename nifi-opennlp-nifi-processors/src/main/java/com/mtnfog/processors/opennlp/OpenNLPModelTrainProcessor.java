@@ -54,10 +54,10 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final PropertyDescriptor TRAINING_DATA_DIRECTORY = new PropertyDescriptor
-            .Builder().name("TRAINING_DATA_DIRECTORY")
-            .displayName("Training data directory")
-            .description("Local directory containing the training data")
+    public static final PropertyDescriptor TRAINING_DATA = new PropertyDescriptor
+            .Builder().name("TRAINING_DATA")
+            .displayName("Training data")
+            .description("Local file containing the training data")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -80,7 +80,7 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
         descriptors.add(OUTPUT_MODEL_FILE_NAME);
-        descriptors.add(TRAINING_DATA_DIRECTORY);
+        descriptors.add(TRAINING_DATA);
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
