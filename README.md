@@ -17,3 +17,7 @@ cp ./nifi-opennlp-nifi-nar/target/nifi-opennlp-nifi-nar-0.0.1.nar /path/to/nifi/
 ```
 
 Now restart NiFi. The processors will now be available for use in your NiFi flows.
+
+## Resources
+
+* [Apache NiFi Developer's Guide](https://nifi.apache.org/docs/nifi-docs/html/developer-guide.html)
