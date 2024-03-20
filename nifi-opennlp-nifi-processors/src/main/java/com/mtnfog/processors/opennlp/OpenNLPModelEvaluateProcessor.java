@@ -85,7 +85,7 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
 
         relationships = new HashSet<>();
         relationships.add(DEPLOY);
-        relationships.add(VALIDATION_FAILED)
+        relationships.add(VALIDATION_FAILED);
         relationships = Collections.unmodifiableSet(relationships);
     }
 
