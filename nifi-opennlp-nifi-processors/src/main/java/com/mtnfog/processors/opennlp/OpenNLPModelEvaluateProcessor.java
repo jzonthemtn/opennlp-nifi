@@ -89,6 +89,7 @@ public class OpenNLPModelEvaluateProcessor extends AbstractProcessor {
         descriptors = new ArrayList<>();
         descriptors.add(MODEL_FILE_NAME);
         descriptors.add(THRESHOLD_PRECISION);
+        descriptors.add(EVALUATION_DATA);
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
