@@ -16,17 +16,6 @@
  */
 package com.mtnfog.processors.opennlp;
 
-import opennlp.tools.namefind.BioCodec;
-import opennlp.tools.namefind.NameFinderME;
-import opennlp.tools.namefind.NameSample;
-import opennlp.tools.namefind.NameSampleDataStream;
-import opennlp.tools.namefind.TokenNameFinderFactory;
-import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.MarkableFileInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.TrainingParameters;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -43,8 +32,6 @@ import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,36 +39,28 @@ import java.util.List;
 import java.util.Set;
 
 @Tags({"opennlp"})
-@CapabilityDescription("Trains an Apache OpenNLP model")
+@CapabilityDescription("Performs inference using an Apache OpenNLP model")
 @SeeAlso({})
 @ReadsAttributes({@ReadsAttribute(attribute="", description="")})
 @WritesAttributes({@WritesAttribute(attribute="", description="")})
-public class OpenNLPModelTrainProcessor extends AbstractProcessor {
+public class OpenNLPInferenceProcessor extends AbstractProcessor {
 
-    public static final PropertyDescriptor OUTPUT_MODEL_FILE_NAME = new PropertyDescriptor
-            .Builder().name("OUTPUT_MODEL_FILE_NAME")
-            .displayName("Output model file name")
-            .description("The output file name of the trained model")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
-    public static final PropertyDescriptor TRAINING_DATA = new PropertyDescriptor
-            .Builder().name("TRAINING_DATA")
-            .displayName("Training data")
-            .description("Local file containing the training data")
+    public static final PropertyDescriptor MODEL_FILE_NAME = new PropertyDescriptor
+            .Builder().name("MODEL_FILE_NAME")
+            .displayName("Model file name")
+            .description("The file name of the trained model")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
     public static final Relationship TRAINED = new Relationship.Builder()
-            .name("TRAINED")
-            .description("Model successfully trained")
+            .name("SUCCESS")
+            .description("Model successfully applied")
             .build();
 
     public static final Relationship FAILURE = new Relationship.Builder()
             .name("FAILURE")
-            .description("Failure while training model")
+            .description("Failure while performing inference")
             .build();
 
     private List<PropertyDescriptor> descriptors;
@@ -91,8 +70,7 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
     @Override
     protected void init(final ProcessorInitializationContext context) {
         descriptors = new ArrayList<>();
-        descriptors.add(OUTPUT_MODEL_FILE_NAME);
-        descriptors.add(TRAINING_DATA);
+        descriptors.add(MODEL_FILE_NAME);
         descriptors = Collections.unmodifiableList(descriptors);
 
         relationships = new HashSet<>();
@@ -118,37 +96,9 @@ public class OpenNLPModelTrainProcessor extends AbstractProcessor {
             return;
         }
 
-        getLogger().info("Processor triggered");
+        getLogger().info("Inference processor triggered");
 
-        try {
 
-            final String trainingDataFile = context.getProperty(TRAINING_DATA).getValue();
-            final InputStreamFactory in = new MarkableFileInputStreamFactory(new File(trainingDataFile));
-
-            final ObjectStream<NameSample> sampleStream = new NameSampleDataStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
-
-            final TrainingParameters params = new TrainingParameters();
-            params.put(TrainingParameters.ITERATIONS_PARAM, 3);
-            params.put(TrainingParameters.CUTOFF_PARAM, 1);
-
-            getLogger().info("Model training beginning");
-            final TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
-                    params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
-
-            final String modelOut = context.getProperty(OUTPUT_MODEL_FILE_NAME).getValue();
-            nameFinderModel.serialize(new File(modelOut));
-            getLogger().info("Trained model written to " + modelOut);
-
-            session.putAttribute(flowFile, "model_file", modelOut);
-
-            session.transfer(flowFile, TRAINED);
-
-        } catch (Exception ex) {
-
-            getLogger().error("Unable to train model", ex);
-            session.transfer(flowFile, FAILURE);
-
-        }
 
     }
 

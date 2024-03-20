@@ -16,3 +16,4 @@
 com.mtnfog.processors.opennlp.OpenNLPDataFormatProcessor
 com.mtnfog.processors.opennlp.OpenNLPModelEvaluateProcessor
 com.mtnfog.processors.opennlp.OpenNLPModelTrainProcessor
+com.mtnfog.processors.opennlp.OpenNLPInferenceProcessor
